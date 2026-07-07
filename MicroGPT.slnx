@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MicroGptScalar/MicroGptScalar.csproj" />
+  <Project Path="MicroGptVector/MicroGptVector.csproj" />
+</Solution>

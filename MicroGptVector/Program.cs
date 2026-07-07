@@ -115,6 +115,7 @@ public static class Program
         {
             e[i] /= total;
         }
+
         return e;
     }
 
@@ -230,6 +231,7 @@ public static class Program
                 {
                     c.X0[i] = te[i] + pe[i];
                 }
+
                 (c.X1, c.S0) = RmsNorm(c.X0);
 
                 // --- Attention block ---
@@ -273,6 +275,7 @@ public static class Program
                 {
                     c.H2[i] = Math.Max(0, c.H1[i]);
                 }
+
                 var x6 = Linear(c.H2, fc2);
                 c.X7 = new double[NEmbd];
                 for (var i = 0; i < NEmbd; i++)
@@ -310,6 +313,7 @@ public static class Program
                 {
                     dlogits[i] = c.Probs[i] / n;
                 }
+
                 dlogits[tokens[t + 1]] -= 1.0 / n;
 
                 var dX7 = LinearBackward(c.X7, lmHead, dlogits);
@@ -322,6 +326,7 @@ public static class Program
                 {
                     dH1[i] = c.H1[i] > 0 ? dH2[i] : 0; // ReLU
                 }
+
                 var dX5 = LinearBackward(c.X5, fc1, dH1);
                 var dX4 = RmsNormBackward(c.X4, c.S2, dX5);
                 for (var i = 0; i < NEmbd; i++) dX4[i] += dX7[i]; // residual branch
@@ -367,7 +372,10 @@ public static class Program
                 var dX2 = LinearBackward(c.X2, wq, dQ);
                 var dX2k = LinearBackward(c.X2, wk, dK[t]);
                 var dX2v = LinearBackward(c.X2, wv, dV[t]);
-                for (var i = 0; i < NEmbd; i++) dX2[i] += dX2k[i] + dX2v[i];
+                for (var i = 0; i < NEmbd; i++)
+                {
+                    dX2[i] += dX2k[i] + dX2v[i];
+                }
 
                 var dX1 = RmsNormBackward(c.X1, c.S1, dX2);
                 for (var i = 0; i < NEmbd; i++) dX1[i] += dX4[i]; // attention residual branch
@@ -422,7 +430,10 @@ public static class Program
                 var x0 = new double[NEmbd];
                 var te = wte.Row(tokenId);
                 var pe = wpe.Row(posId);
-                for (var i = 0; i < NEmbd; i++) x0[i] = te[i] + pe[i];
+                for (var i = 0; i < NEmbd; i++)
+                {
+                    x0[i] = te[i] + pe[i];
+                }
                 var (x1, _) = RmsNorm(x0);
                 var (x2, _) = RmsNorm(x1);
                 var q = Linear(x2, wq);
@@ -436,7 +447,11 @@ public static class Program
                     for (var tp = 0; tp < K.Count; tp++)
                     {
                         double dot = 0;
-                        for (var j = 0; j < HeadDim; j++) dot += q[hs + j] * K[tp][hs + j];
+                        for (var j = 0; j < HeadDim; j++)
+                        {
+                            dot += q[hs + j] * K[tp][hs + j];
+                        }
+
                         la[tp] = dot * invSqrtHd;
                     }
 
@@ -444,7 +459,11 @@ public static class Program
                     for (var j = 0; j < HeadDim; j++)
                     {
                         double s = 0;
-                        for (var tp = 0; tp < K.Count; tp++) s += aw[tp] * V[tp][hs + j];
+                        for (var tp = 0; tp < K.Count; tp++)
+                        {
+                            s += aw[tp] * V[tp][hs + j];
+                        }
+
                         xattn[hs + j] = s;
                     }
                 }
@@ -468,11 +487,13 @@ public static class Program
                 for (var i = 0; i < probs.Length; i++)
                 {
                     cum += probs[i];
-                    if (r < cum)
+                    if (!(r < cum))
                     {
-                        tokenId = i;
-                        break;
+                        continue;
                     }
+
+                    tokenId = i;
+                    break;
                 }
 
                 if (tokenId == BOS) break;

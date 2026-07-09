@@ -1,4 +1,4 @@
-# microgpt
+# MicroGPT
 
 A C# port of [Andrej Karpathy's microgpt](https://karpathy.github.io/2026/02/12/microgpt/) — "the most atomic way to train and run inference for a GPT" — implemented twice:
 
